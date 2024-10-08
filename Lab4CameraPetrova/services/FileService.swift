@@ -8,9 +8,9 @@
 import UIKit
 import AVFoundation
 
-class MyFileManager {
+class FileService {
     
-    static let shared = MyFileManager()
+    static let shared = FileService()
     
     private init() {}
     
@@ -22,10 +22,10 @@ class MyFileManager {
         guard let data = image.jpegData(compressionQuality: 1.0) else { return nil }
         let currentDateTime = Date()
         let formatter = DateFormatter()
-        formatter.dateFormat = "dd-MM-yyyy"
+        formatter.dateFormat = "dd-MM-yyyy_HH-mm-ss"
         let dateString = formatter.string(from: currentDateTime)
         
-        let filename = dateString + ".jpeg"
+        let filename = "img_" + dateString + ".jpeg"
         let fileURL = documentsDirectory.appendingPathComponent(filename)
         
         do {
@@ -40,9 +40,9 @@ class MyFileManager {
     func saveVideo(at sourceURL: URL) -> URL? {
         let currentDateTime = Date()
         let formatter = DateFormatter()
-        formatter.dateFormat = "dd-MM-yyyy"
+        formatter.dateFormat = "dd-MM-yyyy_HH-mm-ss"
         let dateString = formatter.string(from: currentDateTime)
-        let filename = dateString + ".mp4"
+        let filename = "video_" + dateString + ".mp4"
         let destinationURL = documentsDirectory.appendingPathComponent(filename)
         
         do {
@@ -64,36 +64,4 @@ class MyFileManager {
         }
     }
     
-    func getLastSavedMediaThumbnail() -> UIImage? {
-        let allFiles = retrieveAllFiles()
-        
-        guard let lastFileURL = allFiles.first else {
-            return nil
-        }
-        
-        if lastFileURL.pathExtension == "jpeg" {
-            return UIImage(contentsOfFile: lastFileURL.path)
-        } else if lastFileURL.pathExtension == "mp4" {
-            return generateThumbnailForVideo(at: lastFileURL)
-        }
-        
-        return nil
-    }
-    
-    private func generateThumbnailForVideo(at url: URL) -> UIImage? {
-        let asset = AVAsset(url: url)
-        let imageGenerator = AVAssetImageGenerator(asset: asset)
-        imageGenerator.appliesPreferredTrackTransform = true
-        
-        var time = asset.duration
-        time.value = min(time.value, 1)
-        
-        do {
-            let imageRef = try imageGenerator.copyCGImage(at: time, actualTime: nil)
-            return UIImage(cgImage: imageRef)
-        } catch {
-            print("Error generating thumbnail: \(error.localizedDescription)")
-            return nil
-        }
-    }
 }

@@ -15,13 +15,6 @@ class MediaListViewController : UITableViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        print("media list opened")
-        // Uncomment the following line to preserve selection between presentations
-        // self.clearsSelectionOnViewWillAppear = false
-        
-        // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
-        // self.navigationItem.rightBarButtonItem = self.editButtonItem
-        
         
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "mediaCell")
         
@@ -30,13 +23,12 @@ class MediaListViewController : UITableViewController {
     }
     
     override func viewDidAppear(_ animated: Bool) {
-        print("media list appeared")
 
     }
     
     
     func loadMediaItems() {
-        mediaItems = MyFileManager.shared.retrieveAllFiles()
+        mediaItems = FileService.shared.retrieveAllFiles()
         
         // Reload the table view to reflect the loaded data
         tableView.reloadData()

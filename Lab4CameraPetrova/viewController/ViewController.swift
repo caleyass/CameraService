@@ -9,7 +9,6 @@ import UIKit
 
 class ViewController: UIViewController {
     
-    private var cameraService = CameraService()
     private var capturedMedia: [URL] = []
     
     private var previewView: UIView!
@@ -23,7 +22,7 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         viewModel = CameraViewModel()
-        cameraService.startSession()
+        viewModel.startSession()
         setupUI()
     }
     
@@ -32,6 +31,8 @@ class ViewController: UIViewController {
         previewView = UIView()
         previewView.translatesAutoresizingMaskIntoConstraints = false
         previewView.backgroundColor = .black
+        
+        
         view.addSubview(previewView)
         
         // Capture Photo Button
@@ -90,6 +91,11 @@ class ViewController: UIViewController {
         }
     }
     
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        self.setupCameraPreview()
+    }
+    
     
     @objc private func capturePhoto() {
         viewModel.capturePhoto { [weak self] success in
@@ -129,7 +135,7 @@ class ViewController: UIViewController {
     }
     
     @objc private func switchCamera() {
-        cameraService.switchCamera()
+        viewModel.switchCamera()
     }
     
     @objc private func viewMediaList() {

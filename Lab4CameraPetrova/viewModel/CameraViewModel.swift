@@ -22,6 +22,10 @@ final class CameraViewModel {
         cameraService.capturePhoto(completion: completion)
     }
     
+    func startSession() {
+        cameraService.startSession()
+    }
+    
     func startVideoRecording() {
         cameraService.startRecording( )
     }

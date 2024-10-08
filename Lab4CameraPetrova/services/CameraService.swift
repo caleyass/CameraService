@@ -21,7 +21,6 @@ class CameraService: NSObject {
     
     func startSession() {
         checkPermissions()
-        setupSession()
     }
     
     private func setupSession(){
@@ -29,25 +28,19 @@ class CameraService: NSObject {
         captureSession?.sessionPreset = .high
         
         guard let currentDevice = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .back) else { return }
+        print("currentDevice \(currentDevice)")
         let videoInput: AVCaptureDeviceInput
         
         do {
             videoInput = try AVCaptureDeviceInput(device: currentDevice)
+            if (captureSession?.canAddInput(videoInput) ?? false) {
+                captureSession?.addInput(videoInput)
+            } else {
+                print("Error setting up video input:")
+            }
         } catch {
-            return
-        }
-        
-        do {
-            try AVAudioSession.sharedInstance().setCategory(.record, mode: .default, options: [])
-            try AVAudioSession.sharedInstance().setActive(true)
-        } catch {
-            print("Error setting up audio session: \(error.localizedDescription)")
-        }
-        
-        if (captureSession?.canAddInput(videoInput) ?? false) {
-            captureSession?.addInput(videoInput)
-        } else {
-            return
+            print("Error setting up video session: \(error.localizedDescription)")
+
         }
         
         videoOutput = AVCaptureMovieFileOutput()
@@ -60,14 +53,24 @@ class CameraService: NSObject {
             captureSession?.addOutput(photoOutput!)
         }
         
-        if let captureSession = captureSession {
-            videoPreviewLayer = AVCaptureVideoPreviewLayer(session: captureSession)
-            videoPreviewLayer?.videoGravity = .resizeAspectFill
+        do {
+            try AVAudioSession.sharedInstance().setCategory(.record, mode: .default, options: [])
+            try AVAudioSession.sharedInstance().setActive(true)
+        } catch {
+            print("Error setting up audio session: \(error.localizedDescription)")
         }
         
-        captureSession?.startRunning()
+        if let captureSession {
+            print("videoPreviewLayer initialize")
+            videoPreviewLayer = AVCaptureVideoPreviewLayer(session: captureSession)
+            videoPreviewLayer?.videoGravity = .resizeAspectFill
+            
+        }
+        
+        self.captureSession?.startRunning()
     }
     
+
     func switchCamera() {
         guard let currentDevice = currentDevice else { return }
         if let captureSession {
@@ -141,10 +144,17 @@ class CameraService: NSObject {
     func checkPermissions() {
         switch AVCaptureDevice.authorizationStatus(for: .video) {
         case .authorized:
-            break
+            setupSession()
         case .notDetermined:
-            AVCaptureDevice.requestAccess(for: .video) { _ in }
+            AVCaptureDevice.requestAccess(for: .video) { [weak self] granted in
+                guard granted else { return }
+                DispatchQueue.main.async {
+                    self?.setupSession()
+                }
+            }
         case .denied:
+            break
+        case .restricted:
             break
         @unknown default:
             break
@@ -156,16 +166,16 @@ class CameraService: NSObject {
 extension CameraService: AVCapturePhotoCaptureDelegate {
     func photoOutput(_ output: AVCapturePhotoOutput, didFinishProcessingPhoto photo: AVCapturePhoto, error: Error?) {
         guard error == nil else {
-            print("Error processing photo: \(String(describing: error?.localizedDescription))")
+            print("Error saving photo: \(String(describing: error?.localizedDescription))")
             return
         }
 
         if let imageData = photo.fileDataRepresentation() {
             if let capturedImage = UIImage(data: imageData) {
-                if let savedURL = MyFileManager.shared.saveImage(capturedImage) {
-                    print("Image saved at \(savedURL)")
+                if let savedURL = FileService.shared.saveImage(capturedImage) {
+                    print("Photo saved at \(savedURL)")
                 } else {
-                    print("Failed to save image to app's document directory.")
+                    print("Failed to save photo.")
                 }
             }
         }
