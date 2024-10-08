@@ -22,12 +22,12 @@ class MediaViewController: UIViewController {
         super.viewDidLoad()
         print("init media view controller")
         if mediaItems[currentMediaIndex].pathExtension == "mp4" {
+            NotificationCenter.default.addObserver(self, selector: #selector(playerItemDidReachEnd), name: .AVPlayerItemDidPlayToEndTime, object: nil)
             setupVideoPlayer()
             setupControls()
         } else {
             setupImageView()
         }
-        NotificationCenter.default.addObserver(self, selector: #selector(playerItemDidReachEnd), name: .AVPlayerItemDidPlayToEndTime, object: nil)
 
         navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Save", style: .plain, target: self, action: #selector(saveMedia))
     }
@@ -44,8 +44,10 @@ class MediaViewController: UIViewController {
     
     @objc func playerItemDidReachEnd(notification: Notification) {
         self.playPauseButton.setImage(UIImage(systemName: "play.fill"), for: .normal)
-        self.nextMedia()
-        print("next media")
+        if(currentMediaIndex < mediaItems.count){
+            self.nextMedia()
+            print("next media")
+        }
         
     }
 
