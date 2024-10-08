@@ -15,9 +15,6 @@ class CameraService: NSObject {
     private var currentDevice: AVCaptureDevice?
 
     var videoPreviewLayer: AVCaptureVideoPreviewLayer?
-
-    var onCapturePhoto: ((URL) -> Void)?
-    var onCaptureVideo: ((URL) -> Void)?
     
     func startSession() {
         checkPermissions()
@@ -27,9 +24,11 @@ class CameraService: NSObject {
         captureSession = AVCaptureSession()
         captureSession?.sessionPreset = .high
         
-        guard let currentDevice = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .back) else { return }
+        currentDevice = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .back)
         print("currentDevice \(currentDevice)")
         let videoInput: AVCaptureDeviceInput
+        
+        guard let currentDevice else { return }
         
         do {
             videoInput = try AVCaptureDeviceInput(device: currentDevice)
@@ -73,6 +72,7 @@ class CameraService: NSObject {
 
     func switchCamera() {
         guard let currentDevice = currentDevice else { return }
+
         if let captureSession {
             captureSession.beginConfiguration()
             captureSession.removeInput(captureSession.inputs.first!)
@@ -184,6 +184,15 @@ extension CameraService: AVCapturePhotoCaptureDelegate {
 
 extension CameraService: AVCaptureFileOutputRecordingDelegate {
     func fileOutput(_ output: AVCaptureFileOutput, didFinishRecordingTo outputFileURL: URL, from connections: [AVCaptureConnection], error: Error?) {
-        onCaptureVideo?(outputFileURL)
+        guard error == nil else {
+            print("Error saving video: \(String(describing: error?.localizedDescription))")
+            return
+        }
+        
+        if let savedURL = FileService.shared.saveVideo(at: outputFileURL) {
+            print("Video saved at \(savedURL)")
+        } else {
+            print("Failed to save video.")
+        }
     }
 }
