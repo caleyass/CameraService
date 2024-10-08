@@ -23,13 +23,13 @@ class MediaViewController: UIViewController {
         print("init media view controller")
         if mediaItems[currentMediaIndex].pathExtension == "mp4" {
             setupVideoPlayer()
-            setupControllers()
+            setupControls()
         } else {
             setupImageView()
         }
         NotificationCenter.default.addObserver(self, selector: #selector(playerItemDidReachEnd), name: .AVPlayerItemDidPlayToEndTime, object: nil)
 
-        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Save to gallery", style: .plain, target: self, action: #selector(saveMedia))
+        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Save", style: .plain, target: self, action: #selector(saveMedia))
     }
     
     
@@ -50,7 +50,7 @@ class MediaViewController: UIViewController {
     }
 
     
-    func setupControllers() {
+    func setupControls() {
         let controlHeight: CGFloat = 60
         let controlWidth: CGFloat = 60
         
@@ -59,12 +59,12 @@ class MediaViewController: UIViewController {
         playPauseButton.addTarget(self, action: #selector(playPause), for: .touchUpInside)
         view.addSubview(playPauseButton)
         
-        let nextButton = UIButton(frame: CGRect(x: playPauseButton.frame.maxX + 10, y: playPauseButton.frame.minY, width: controlWidth, height: controlHeight))
+        let nextButton = UIButton(frame: CGRect(x: playPauseButton.frame.maxX + 20, y: playPauseButton.frame.minY, width: controlWidth, height: controlHeight))
         nextButton.setTitle("Next", for: .normal)
         nextButton.addTarget(self, action: #selector(nextMedia), for: .touchUpInside)
         view.addSubview(nextButton)
         
-        let prevButton = UIButton(frame: CGRect(x: playPauseButton.frame.minX - 10 - controlWidth, y: playPauseButton.frame.minY, width: controlWidth, height: controlHeight))
+        let prevButton = UIButton(frame: CGRect(x: playPauseButton.frame.minX - 20 - controlWidth, y: playPauseButton.frame.minY, width: controlWidth, height: controlHeight))
         prevButton.setTitle("Prev", for: .normal)
         prevButton.addTarget(self, action: #selector(previousMedia), for: .touchUpInside)
         view.addSubview(prevButton)
@@ -129,7 +129,7 @@ class MediaViewController: UIViewController {
         }
         
         setupVideoPlayer()
-        setupControllers()
+        setupControls()
         playPause()
     }
     
