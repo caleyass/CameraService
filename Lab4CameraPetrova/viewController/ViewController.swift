@@ -101,7 +101,6 @@ class ViewController: UIViewController {
         viewModel.capturePhoto { [weak self] success in
             if success {
                 self?.showAlert(title: "Success", message: "Photo successfully captured and saved.")
-                //self?.updatePreviewButtonImage()
             } else {
                 self?.showAlert(title: "Error", message: "Failed to capture and save photo.")
             }
@@ -116,7 +115,6 @@ class ViewController: UIViewController {
         viewModel.stopVideoRecording{ [weak self] success in
             if success {
                 self?.showAlert(title: "Success", message: "Video successfully recorded and saved.")
-               // self?.updatePreviewButtonImage()
             } else {
                 self?.showAlert(title: "Error", message: "Failed to record and save video.")
             }

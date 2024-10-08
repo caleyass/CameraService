@@ -20,16 +20,16 @@ class MediaViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        // Check if media is video or image
+        print("init media view controller")
         if mediaItems[currentMediaIndex].pathExtension == "mp4" {
             setupVideoPlayer()
-            setupControls()
+            setupControllers()
         } else {
             setupImageView()
         }
-        
-        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Save", style: .plain, target: self, action: #selector(saveMedia))
+        NotificationCenter.default.addObserver(self, selector: #selector(playerItemDidReachEnd), name: .AVPlayerItemDidPlayToEndTime, object: nil)
+
+        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Save to gallery", style: .plain, target: self, action: #selector(saveMedia))
     }
     
     
@@ -40,43 +40,38 @@ class MediaViewController: UIViewController {
         playerLayer.frame = view.bounds
         playerLayer.videoGravity = .resizeAspect
         view.layer.addSublayer(playerLayer)
-        NotificationCenter.default.addObserver(self, selector: #selector(playerItemDidReachEnd), name: .AVPlayerItemDidPlayToEndTime, object: nil)
     }
     
     @objc func playerItemDidReachEnd(notification: Notification) {
-        DispatchQueue.main.async {
-            self.playPauseButton.setImage(UIImage(systemName: "play.fill"), for: .normal)
-            self.nextMedia()
-        }
+        self.playPauseButton.setImage(UIImage(systemName: "play.fill"), for: .normal)
+        self.nextMedia()
+        print("next media")
+        
     }
 
     
-    func setupControls() {
-        let controlHeight: CGFloat = 50
-        let controlWidth: CGFloat = 50
+    func setupControllers() {
+        let controlHeight: CGFloat = 60
+        let controlWidth: CGFloat = 60
         
-        // Play/Pause button
         playPauseButton = UIButton(frame: CGRect(x: (view.frame.width - controlWidth) / 2, y: view.frame.height - (controlHeight + 50), width: controlWidth, height: controlHeight))
         playPauseButton.setImage(UIImage(systemName: "play.fill"), for: .normal)
         playPauseButton.addTarget(self, action: #selector(playPause), for: .touchUpInside)
         view.addSubview(playPauseButton)
         
-        // Next button
-        let nextButton = UIButton(frame: CGRect(x: playPauseButton.frame.maxX + 20, y: playPauseButton.frame.minY, width: controlWidth, height: controlHeight))
-        nextButton.setTitle("⏭", for: .normal) // Using emoji as a placeholder
+        let nextButton = UIButton(frame: CGRect(x: playPauseButton.frame.maxX + 10, y: playPauseButton.frame.minY, width: controlWidth, height: controlHeight))
+        nextButton.setTitle("Next", for: .normal)
         nextButton.addTarget(self, action: #selector(nextMedia), for: .touchUpInside)
         view.addSubview(nextButton)
         
-        // Previous button
-        let prevButton = UIButton(frame: CGRect(x: playPauseButton.frame.minX - 20 - controlWidth, y: playPauseButton.frame.minY, width: controlWidth, height: controlHeight))
-        prevButton.setTitle("⏮", for: .normal) // Using emoji as a placeholder
+        let prevButton = UIButton(frame: CGRect(x: playPauseButton.frame.minX - 10 - controlWidth, y: playPauseButton.frame.minY, width: controlWidth, height: controlHeight))
+        prevButton.setTitle("Prev", for: .normal)
         prevButton.addTarget(self, action: #selector(previousMedia), for: .touchUpInside)
         view.addSubview(prevButton)
         
-        // Mute/Unmute button
         muteButton = UIButton(frame: CGRect(x: 20, y: view.frame.height - (controlHeight + 50), width: controlWidth, height: controlHeight))
         muteButton.setImage(UIImage(systemName: "speaker.wave.3.fill"), for: .normal)
-        muteButton.addTarget(self, action: #selector(toggleMute), for: .touchUpInside)
+        muteButton.addTarget(self, action: #selector(toggleSound), for: .touchUpInside)
         view.addSubview(muteButton)
     }
     
@@ -129,24 +124,20 @@ class MediaViewController: UIViewController {
 
     func playMediaAtIndex() {
         if player != nil {
-            player.pause() // pause current video if any
-            
-            playerLayer.removeFromSuperlayer() // remove current player layer from view
+            player.pause()
+            playerLayer.removeFromSuperlayer()
         }
         
-        setupVideoPlayer() // setup the new video player
+        setupVideoPlayer()
+        setupControllers()
         playPause()
     }
     
-    @objc func toggleMute() {
+    @objc func toggleSound() {
         if player.isMuted {
-            DispatchQueue.main.async {
-                self.muteButton.setImage(UIImage(systemName: "speaker.wave.3.fill"), for: .normal)
-            }
+            self.muteButton.setImage(UIImage(systemName: "speaker.wave.3.fill"), for: .normal)
         } else {
-            DispatchQueue.main.async {
-                self.muteButton.setImage(UIImage(systemName: "speaker.slash.fill"), for: .normal)
-            }
+            self.muteButton.setImage(UIImage(systemName: "speaker.slash.fill"), for: .normal)
         }
         player.isMuted.toggle()
     }
@@ -163,20 +154,16 @@ class MediaViewController: UIViewController {
     
     @objc func videoSaved(_ videoPath: String, didFinishSavingWithError error: NSError?, contextInfo: UnsafeRawPointer) {
         if let error = error {
-            // Handle the error
             print("Error saving video: \(error.localizedDescription)")
         } else {
-            // Video saved successfully
             print("Video saved to photo album.")
         }
     }
     
     @objc func imageSaved(_ image: UIImage, didFinishSavingWithError error: NSError?, contextInfo: UnsafeRawPointer) {
         if let error = error {
-            // Handle the error
             print("Error saving image: \(error.localizedDescription)")
         } else {
-            // Image saved successfully
             print("Image saved to photo album.")
         }
     }
