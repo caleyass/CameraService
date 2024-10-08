@@ -22,7 +22,9 @@ class CameraService: NSObject {
     
     private func setupSession(){
         captureSession = AVCaptureSession()
-        captureSession?.sessionPreset = .high
+        guard let captureSession = captureSession else { return }
+
+        captureSession.sessionPreset = .high
         
         currentDevice = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .back)
         print("currentDevice \(currentDevice)")
@@ -32,8 +34,8 @@ class CameraService: NSObject {
         
         do {
             videoInput = try AVCaptureDeviceInput(device: currentDevice)
-            if (captureSession?.canAddInput(videoInput) ?? false) {
-                captureSession?.addInput(videoInput)
+            if (captureSession.canAddInput(videoInput)) {
+                captureSession.addInput(videoInput)
             } else {
                 print("Error setting up video input:")
             }
@@ -42,14 +44,21 @@ class CameraService: NSObject {
 
         }
         
+        guard let audioDevice = AVCaptureDevice.default(for: .audio), let audioInput = try? AVCaptureDeviceInput(device: audioDevice), captureSession.canAddInput(audioInput)
+        else {
+            print("Error: Unable to add audio input")
+            return
+        }
+        captureSession.addInput(audioInput)
+        
         videoOutput = AVCaptureMovieFileOutput()
-        if (captureSession?.canAddOutput(videoOutput!) ?? false) {
-            captureSession?.addOutput(videoOutput!)
+        if (captureSession.canAddOutput(videoOutput!)) {
+            captureSession.addOutput(videoOutput!)
         }
         
         photoOutput = AVCapturePhotoOutput()
-        if (captureSession?.canAddOutput(photoOutput!) ?? false) {
-            captureSession?.addOutput(photoOutput!)
+        if (captureSession.canAddOutput(photoOutput!)) {
+            captureSession.addOutput(photoOutput!)
         }
         
         do {
@@ -59,13 +68,10 @@ class CameraService: NSObject {
             print("Error setting up audio session: \(error.localizedDescription)")
         }
         
-        if let captureSession {
-            print("videoPreviewLayer initialize")
-            videoPreviewLayer = AVCaptureVideoPreviewLayer(session: captureSession)
-            videoPreviewLayer?.videoGravity = .resizeAspectFill
-            
-        }
-        
+        print("videoPreviewLayer initialize")
+        videoPreviewLayer = AVCaptureVideoPreviewLayer(session: captureSession)
+        videoPreviewLayer?.videoGravity = .resizeAspectFill
+                    
         self.captureSession?.startRunning()
     }
     
