@@ -21,49 +21,47 @@ class ViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        viewModel = CameraViewModel()
-        viewModel.startSession()
         setupUI()
+        //for the first launch
+        NotificationCenter.default.addObserver(self, selector: #selector(onSessionSetupComplete), name: .sessionSetupComplete, object: nil)
+
+        viewModel = CameraViewModel()
+
+        viewModel.startSession()
+
     }
     
     private func setupUI() {
-        // Preview View
         previewView = UIView()
         previewView.translatesAutoresizingMaskIntoConstraints = false
         previewView.backgroundColor = .black
         
-        
         view.addSubview(previewView)
         
-        // Capture Photo Button
         capturePhotoButton = UIButton(type: .system)
         capturePhotoButton.setTitle("Capture Photo", for: .normal)
         capturePhotoButton.addTarget(self, action: #selector(capturePhoto), for: .touchUpInside)
         capturePhotoButton.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(capturePhotoButton)
 
-        // Record Button
         recordButton = UIButton(type: .system)
         recordButton.setTitle("Start Recording", for: .normal)
         recordButton.addTarget(self, action: #selector(toggleRecording), for: .touchUpInside)
         recordButton.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(recordButton)
 
-        // Switch Camera Button
         switchCameraButton = UIButton(type: .system)
         switchCameraButton.setTitle("Switch Camera", for: .normal)
         switchCameraButton.addTarget(self, action: #selector(switchCamera), for: .touchUpInside)
         switchCameraButton.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(switchCameraButton)
 
-        // Media List Button
         mediaListButton = UIButton(type: .system)
         mediaListButton.setTitle("View Media", for: .normal)
         mediaListButton.addTarget(self, action: #selector(viewMediaList), for: .touchUpInside)
         mediaListButton.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(mediaListButton)
         
-        // Layout Constraints
         NSLayoutConstraint.activate([
             previewView.topAnchor.constraint(equalTo: view.topAnchor),
             previewView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
@@ -85,6 +83,7 @@ class ViewController: UIViewController {
     }
     
     func setupCameraPreview() {
+        print("setupCameraPreview")
         if let previewLayer = viewModel.videoPreviewLayer {
             previewLayer.frame = previewView.bounds
             previewView.layer.addSublayer(previewLayer)
@@ -93,7 +92,12 @@ class ViewController: UIViewController {
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
+        viewModel.startRunSession()
         self.setupCameraPreview()
+    }
+    
+    @objc private func onSessionSetupComplete() {
+        setupCameraPreview()
     }
     
     
@@ -150,6 +154,20 @@ class ViewController: UIViewController {
         let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
         alertController.addAction(okAction)
         present(alertController, animated: true, completion: nil)
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        viewModel.stopSession()
+        if let previewLayer = viewModel.videoPreviewLayer {
+            previewLayer.removeFromSuperlayer()
+        }
+    }
+
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self, name: .sessionSetupComplete, object: nil)
+        
     }
 }
 

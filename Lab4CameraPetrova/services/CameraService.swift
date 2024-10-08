@@ -69,6 +69,21 @@ class CameraService: NSObject {
         self.captureSession?.startRunning()
     }
     
+    func startRunSession() {
+        guard let captureSession else { return }
+        if !captureSession.isRunning {
+            captureSession.startRunning()
+        }
+    }
+    
+    func stopSession() {
+        guard let captureSession else { return }
+        if captureSession.isRunning {
+            captureSession.stopRunning()
+        }
+    }
+
+    
 
     func switchCamera() {
         guard let currentDevice = currentDevice else { return }
@@ -150,6 +165,7 @@ class CameraService: NSObject {
                 guard granted else { return }
                 DispatchQueue.main.async {
                     self?.setupSession()
+                    NotificationCenter.default.post(name: .sessionSetupComplete, object: nil)
                 }
             }
         case .denied:
@@ -195,4 +211,9 @@ extension CameraService: AVCaptureFileOutputRecordingDelegate {
             print("Failed to save video.")
         }
     }
+}
+
+
+extension Notification.Name {
+    static let sessionSetupComplete = Notification.Name("sessionSetupComplete")
 }

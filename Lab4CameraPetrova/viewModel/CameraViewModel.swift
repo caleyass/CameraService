@@ -14,10 +14,7 @@ final class CameraViewModel {
     var videoPreviewLayer: AVCaptureVideoPreviewLayer? {
         return cameraService.videoPreviewLayer
     }
-    
-    private var mediaType : MediaType = .photo
-    var isRecordingVideo: Bool = false
-    
+        
     func capturePhoto(completion: @escaping (Bool) -> Void) {
         cameraService.capturePhoto(completion: completion)
     }
@@ -42,6 +39,12 @@ final class CameraViewModel {
     
     func switchCamera() {
         cameraService.switchCamera()
+    }
+    func stopSession() {
+        cameraService.stopSession()
+    }
+    func startRunSession() {
+        cameraService.startRunSession()
     }
 }
 
