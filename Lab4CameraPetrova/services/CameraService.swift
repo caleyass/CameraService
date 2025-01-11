@@ -134,17 +134,7 @@ class CameraService: NSObject {
     }
     
     func startRecording() {
-        
-//        do {
-//            let session = AVAudioSession.sharedInstance()
-//            if session.category != .record {
-//                try session.setCategory(.record)
-//                try session.setActive(true)
-//            }
-//        } catch {
-//            print("Error setting up audio session: \(error.localizedDescription)")
-//        }
-
+    
         let outputPath = NSTemporaryDirectory() + "video.mp4"
         let outputURL = URL(fileURLWithPath: outputPath)
         videoOutput?.startRecording(to: outputURL, recordingDelegate: self)
